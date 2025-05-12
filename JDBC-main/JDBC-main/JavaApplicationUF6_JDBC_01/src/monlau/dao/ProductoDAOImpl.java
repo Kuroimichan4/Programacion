@@ -39,8 +39,8 @@ public class ProductoDAOImpl implements ProductoDAO {
             registerDriver();
             // abrir la conexión
             conn = DriverManager.getConnection(DB_URL, DB_USR, DB_PWD);
-            Statement stmt = conn.createStatement();
-            // enviar el comando insert
+            Statement stmt = conn.createStatement(); //Crea un objeto para enviar una orden SQL (inserts/updates/deletes/select) a la BBDD
+            // envia la consulta insert con el executeUpdate()
             stmt.executeUpdate("insert into producto values ("
                     + producto.getId() + ",'"
                     + producto.getNombre() + "',"
@@ -60,47 +60,23 @@ public class ProductoDAOImpl implements ProductoDAO {
 
     public void update(Producto producto) {
         Connection conn = null;
-    try {
-        registerDriver(); 
-        // para abrir la conexion
-        conn = DriverManager.getConnection(DB_URL, DB_USR, DB_PWD);
-        
-        String sql = "UPDATE producto SET nombre = ?, precio = ? WHERE id = ?";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        
-        ps.setString(1, producto.getNombre());
-        ps.setDouble(2, producto.getPrecio());
-        ps.setInt(3, producto.getId());
-
-        ps.executeUpdate();
-        ps.close();
-        
-    } catch (SQLException ex) {
-        throw new RuntimeException(ex);
-    } finally {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-    }
-
-    public void delete(Producto producto) {
-        Connection conn = null;
         try {
-            registerDriver(); // para abrir la conexion
+            registerDriver();
+            // abrir la conexión
             conn = DriverManager.getConnection(DB_URL, DB_USR, DB_PWD);
-
-            String sql = "DELETE FROM producto WHERE id = ?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-
-            ps.setInt(1, producto.getId());
+            // Creamos el objeto con la orden para SQL
+            PreparedStatement ps = conn.prepareStatement("UPDATE producto SET nombre = ?, precio = ? WHERE id = ?");
+            //también se puede hacer de esta forma para que sea mas entendible y tal
+//            String sql = "UPDATE producto SET nombre = ?, precio = ? WHERE id = ?";
+//            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            // para sustituir los  ? de la sentencia SQL
+            ps.setString(1, producto.getNombre());
+            ps.setDouble(2, producto.getPrecio());
+            ps.setInt(3, producto.getId());
+            
             ps.executeUpdate();
-            ps.close();
-
+            ps.close(); //esto cierra  el recurso de los Statements que al parecer si no se cierran consumen memoria tanto de la app como de la BBDD
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         } finally {
@@ -112,6 +88,32 @@ public class ProductoDAOImpl implements ProductoDAO {
                 }
             }
         }
+    }
+
+    public void delete(Producto producto) {
+        Connection conn = null;
+        try {
+            registerDriver();
+            // abrir la conexión
+            conn = DriverManager.getConnection(DB_URL, DB_USR, DB_PWD);
+            String sql = "DELETE FROM producto WHERE id = ?"; //en este caso se pone la sentencia para dropear el producto
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            ps.setInt(1, producto.getId());
+            
+            ps.executeUpdate();
+            ps.close();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }    
     }
 
  
